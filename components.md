@@ -10,6 +10,7 @@
 7. [Servo controller](#servo-controller---radhen)
 8. [Electronic speed control (ESC)](#electronic-speed-control-esc)
 9. [Buck converter](#buck-converter)
+10. [Visual-inertial SLAM](#visual-inertial-slam---yang-li)
 
 
 ## Chasis
@@ -307,3 +308,180 @@ PWM (Pulse Width Modulation / High rate control): The control of motor speed is 
 ## Buck converter
 
 As I remembered: Input 5.6+ v --> Output 5.0 v
+
+## Visual-inertial SLAM - Yang Li
+
+### ORB-SLAM2
+https://github.com/yangautumn/ORB_SLAM2
+
+#### Pangolin
+
+We use Pangolin for visualization and user interface. Dowload and install instructions can be found at: https://github.com/stevenlovegrove/Pangolin.
+One issue (Fix librealsense include path finding): https://github.com/stevenlovegrove/Pangolin/pull/190/commits/ce7ded2a0701609401b9f9df308d12540e6891a7
+
+
+#### Build ORB-SLAM2
+```
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+```
+The three libraries are used to solve the failure on "usleep not in the scopse" in System.cc, Tracking.cc, LocalMapping.cc, LoopClosing.cc
+
+
+Some advise on the project slam: https://github.com/raulmur/ORB_SLAM2/issues/279 (How to do SLAM with RaspberryPi PiCam and IMU Sensor?)
+
+**Now I successfully compiled Pangolin and ORB-SLAM2 and I try to run the examples**
+
+#### TUM Dataset
+
+1. Download a sequence from http://vision.in.tum.de/data/datasets/rgbd-dataset/download and uncompress it.
+
+2. Execute the following command. Change TUMX.yaml to TUM1.yaml,TUM2.yaml or TUM3.yaml for freiburg1, freiburg2 and freiburg3 sequences respectively. Change PATH_TO_SEQUENCE_FOLDERto the uncompressed sequence folder.
+```
+./Examples/Monocular/mono_tum Vocabulary/ORBvoc.txt Examples/Monocular/TUMX.yaml PATH_TO_SEQUENCE_FOLDER
+```
+One I used:
+```
+./Examples/Monocular/mono_tum Vocabulary/ORBvoc.txt Examples/Monocular/TUM1.yaml ~/Downloads/freiburg1_xyz 
+```
+#### Building the nodes for mono, monoAR, stereo and RGB-D
+
+Add the path including `Examples/ROS/ORB_SLAM2` to the `ROS_PACKAGE_PATH` environment variable. Open `.bashrc` file and add at the end the following line. Replace `PATH` by the folder where you cloned ORB_SLAM2:
+```
+export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:PATH/ORB_SLAM2/Examples/ROS
+```
+Execute `build_ros.sh` script:
+```
+chmod +x build_ros.sh
+./build_ros.sh
+```
+#### Running Monocular Node
+
+For a monocular input from topic `/camera/image_raw` run node `ORB_SLAM2/Mono`. You will need to provide the vocabulary file and a settings file. See the monocular examples above.
+
+```
+rosrun ORB_SLAM2 Mono PATH_TO_VOCABULARY PATH_TO_SETTINGS_FILE
+```
+
+My command is 
+```
+rosrun ORB_SLAM2 Mono Vocabulary/ORBvoc.txt Examples/Monocular/ocam.yaml
+```
+The following is copied from `Examples/Monocular/TUM1.yaml`, we need to configure our YAML file for our oCam.
+```YAML
+  1 %YAML:1.0                                                                                                               
+  2 
+  3 #--------------------------------------------------------------------------------------------
+  4 # Camera Parameters. Adjust them!
+  5 #--------------------------------------------------------------------------------------------
+  6 
+  7 # Camera calibration and distortion parameters (OpenCV) 
+  8 Camera.fx: 517.306408
+  9 Camera.fy: 516.469215
+ 10 Camera.cx: 318.643040
+ 11 Camera.cy: 255.313989
+ 12 
+ 13 Camera.k1: 0.262383
+ 14 Camera.k2: -0.953104
+ 15 Camera.p1: -0.005358
+ 16 Camera.p2: 0.002628
+ 17 Camera.k3: 1.163314
+ 18 
+ 19 # Camera frames per second 
+ 20 Camera.fps: 30.0
+ 21 
+ 22 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+ 23 Camera.RGB: 1
+ 24 
+ 25 #--------------------------------------------------------------------------------------------
+ 26 # ORB Parameters
+ 27 #--------------------------------------------------------------------------------------------
+ 28 
+ 29 # ORB Extractor: Number of features per image
+ 30 ORBextractor.nFeatures: 1000
+ 31 
+ 32 # ORB Extractor: Scale factor between levels in the scale pyramid   
+ 33 ORBextractor.scaleFactor: 1.2
+ 34 
+ 35 # ORB Extractor: Number of levels in the scale pyramid  
+ 36 ORBextractor.nLevels: 8
+ 37 
+ 38 # ORB Extractor: Fast threshold
+ 39 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+ 40 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+ 41 # You can lower these values if your images have low contrast           
+ 42 ORBextractor.iniThFAST: 20
+ 43 ORBextractor.minThFAST: 7
+ 44 
+ 45 #--------------------------------------------------------------------------------------------
+ 46 # Viewer Parameters
+ 47 #--------------------------------------------------------------------------------------------
+ 48 Viewer.KeyFrameSize: 0.05
+ 49 Viewer.KeyFrameLineWidth: 1
+ 50 Viewer.GraphLineWidth: 0.9
+ 51 Viewer.PointSize:2
+ 52 Viewer.CameraSize: 0.08
+ 53 Viewer.CameraLineWidth: 3
+ 54 Viewer.ViewpointX: 0
+ 55 Viewer.ViewpointY: -0.7
+ 56 Viewer.ViewpointZ: -1.8
+ 57 Viewer.ViewpointF: 500
+```
+
+### Camera calibration - oCam
+#### Calibration using OpenCV
+(not important now) First, [Install OpenCV 3.0 and Python 3.4+ on Ubuntu 14.04](http://www.pyimagesearch.com/2015/07/20/install-opencv-3-0-and-python-3-4-on-ubuntu/)
+
+Then follow the [tutorial on Camera calibration With OpenCV](http://docs.opencv.org/3.1.0/d4/d94/tutorial_camera_calibration.html)
+
+**How to compile the camera_calibration.cpp file (It doesn't like monocular camera)**
+Use mine as example: find the `example_cmake` folder in your opencv source file: `/home/yang/opencv/samples/cpp/example_cmake`, copy, modify and compile it.
+
+#### Calibration using ROS packages
+**Try procedure: libuvc_camera --> camera_calibration (--> orb-slam2)**
+Now `libuvc_camera` is working with the newly rebuild `libuvc` 
+When I run the node, I got a warning:
+```
+WARN ros.camera_info_manager: Camera calibration file /home/yang/.ros/camera_info/camera.yaml not found.
+```
+(the `camera.yaml` file is used to store the calibration data after running `camera_calibration` node)
+What I did is trying to follow the instructions in [How to Calibrate a Monocular Camera](http://wiki.ros.org/camera_calibration/Tutorials/MonocularCalibration)
+ 
+And also check [wiki](http://wiki.ros.org/camera_calibration) for camera calibration, [theory](Camera Calibration and 3D Reconstruction) of camera camlibration.
+
+In the termminal running `libuvc_camera`, I got the following information:
+```
+INFO ros.camera_info_manager: writing calibration data to /home/yang/.ros/camera_info/camera.yaml
+```
+Following is the content of `camera.yaml`
+```yaml
+image_width: 640
+image_height: 480
+camera_name: camera
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [977.6634949347863, 0, 345.7413814757732, 0, 976.9311317181429, 242.6739767243544, 0, 0, 1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.4756923568249309, 0.3486987708884488, -0.0008574457582377547, -0.0003268831859127585, 0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [926.132568359375, 0, 348.411146231374, 0, 0, 948.2742919921875, 242.6637827664636, 0, 0, 0, 1, 0]
+```
+Lesson learned (just intuitive):
+1. nFeatures should be larger
+```
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1500
+```
+2. Environment light should be good (maybe we can also ajust the exposure para of the camera?)
+

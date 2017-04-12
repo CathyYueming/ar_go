@@ -16,9 +16,13 @@ Please get your tasks and update your progress on the project in the **Progress*
        * Some of your ideas
 
 ### Yang
-* [x] Done with the camera ROS node
+* [x] Done with the camera ROS node (now we switch back to `libuvc_camera`)
+* [x] Done with the camera calibration
+* [x] Get ORB-SLAM2 working with oCam
 * Working on visual-inertial SLAM
-* Will dig into the ORB-SLAM
+* Need to let orb-slam publish data to topic `/vo` (visual odometry)
+* Need to get robot-pose-ekf sub to `/vo` and `/imu` and publish to `/odom_combined`
+
 
 ### Radhen
 * [x] Got ros_pololu_servo package working for steering
@@ -40,7 +44,7 @@ Please get your tasks and update your progress on the project in the **Progress*
 
 ### Yueming
 
-
+*Working on rolling ball recognition
 
 ## Competition description
 
@@ -60,8 +64,8 @@ Note of the first meeting:
 ![first meeting note][meeting-1]
 
 
-
-
+Note since the second meeting (April 7, 2017):
+![second meeting note][meeting-2]
 
 
 
@@ -70,3 +74,4 @@ Note of the first meeting:
 [comp-describ]:pics/competition_description.JPG
 [meeting-1]:pics/first_meeting_framework.JPG
 [ros-topics]:pics/ros_topics_needed_[part].JPG
+[meeting-2]:pics/meeting_April_7.JPG
