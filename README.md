@@ -44,7 +44,7 @@ Please get your tasks and update your progress on the project in the **Progress*
 
 ### Yueming
 
-
+*Working on rolling ball recognition
 
 ## Competition description
 
