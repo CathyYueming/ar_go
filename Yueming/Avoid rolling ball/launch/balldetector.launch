@@ -1,4 +1,4 @@
 
 <launch>
-	<node pkg="Avoid rolling ball" type="balldetector.py" name="detector" output="screen" />
+	<node pkg="Avoid rolling ball" type="balldetector.py" name="image_feature" output="screen" />
 </launch>
