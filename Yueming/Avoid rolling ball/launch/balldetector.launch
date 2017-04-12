@@ -1,0 +1,4 @@
+
+<launch>
+	<node pkg="rolling_ball_detector" type="balldetector.py" name="detector" output="screen" />
+</launch>
