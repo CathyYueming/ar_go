@@ -64,7 +64,7 @@ class ball_locator:
       cv2.imshow("Image window", image)
       cv2.imshow("Edges", edges)
       if cv2.waitKey(2) == 1048603:
-          rospy.signal_shutdown("You asked me to you bastard")
+          rospy.signal_shutdown(" shut down")
       rospy.sleep(0.05)# sleeping for 50 ms	
 
 def main(args):
